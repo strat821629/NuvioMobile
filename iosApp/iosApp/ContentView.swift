@@ -564,8 +564,7 @@ final class AppNavigationCoordinator: ObservableObject {
 
     init() {
         profileTabInteraction.onLongPress = { [weak self] in
-            guard let self, self.isAppReady else { return }
-            self.isProfileSwitcherPresented = true
+            self?.presentProfileSwitcher()
         }
     }
 
@@ -634,6 +633,11 @@ final class AppNavigationCoordinator: ObservableObject {
     func openProfileManagement() {
         isProfileSwitcherPresented = false
         profileSwitcherController.requestManageProfiles()
+    }
+
+    func presentProfileSwitcher() {
+        guard isAppReady else { return }
+        isProfileSwitcherPresented = true
     }
 
     func tab(for target: TabNavigationCoordinator) -> NuvioAppTab? {
@@ -1298,6 +1302,14 @@ struct NativeNavContentView: View {
                                     "\(appCoordinator.selectedTab == tab)"
                             )
                         }
+                        .simultaneousGesture(
+                            LongPressGesture(minimumDuration: 0.45)
+                                .onEnded { _ in
+                                    if UIDevice.current.userInterfaceIdiom == .pad {
+                                        appCoordinator.presentProfileSwitcher()
+                                    }
+                                }
+                        )
                     }
                     .popover(
                         isPresented: $appCoordinator.isProfileSwitcherPresented,
